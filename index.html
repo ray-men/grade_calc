@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculateur de Moyenne — Semestre 5</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --panel: #0f1520;
+    --panel2: #141c2b;
+    --border: #1e2d45;
+    --accent: #00c8ff;
+    --accent2: #0066ff;
+    --accent3: #00ff99;
+    --red: #ff3b3b;
+    --green: #00e676;
+    --text: #c8d8e8;
+    --text-dim: #5a7a9a;
+    --mono: 'Share Tech Mono', monospace;
+    --display: 'Barlow Condensed', sans-serif;
+    --body: 'Rajdhani', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Scanline effect */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.04) 2px,
+      rgba(0,0,0,0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+  }
+
+  .header-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 16px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    animation: pulse-border 3s infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 rgba(0,200,255,0); border-color: var(--accent); }
+    50% { box-shadow: 0 0 12px rgba(0,200,255,0.3); border-color: #66e0ff; }
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    line-height: 1;
+    color: #fff;
+  }
+
+  h1 span {
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,200,255,0.5);
+  }
+
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    margin-top: 10px;
+    text-transform: uppercase;
+  }
+
+  .header-line {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    margin-top: 24px;
+    position: relative;
+  }
+
+  .header-line::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  /* MODULES TABLE */
+  .modules-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 36px;
+  }
+
+  .module-row {
+    display: grid;
+    grid-template-columns: 1fr 60px 90px 90px 90px;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .module-header {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    display: grid;
+    grid-template-columns: 1fr 60px 90px 90px 90px;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  .module-header span { display: flex; align-items: center; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    padding: 10px 14px;
+    font-family: var(--body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.5px;
+    transition: border-color 0.2s, background 0.2s;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  }
+
+  .card:hover { background: var(--panel2); border-left-color: var(--accent); }
+
+  .module-name { font-weight: 700; font-size: 0.88rem; line-height: 1.3; }
+  .coeff-badge {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 1rem;
+    color: var(--accent);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+  }
+
+  .input-cell {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+    overflow: hidden;
+  }
+
+  .input-cell.disabled {
+    opacity: 0.25;
+    pointer-events: none;
+  }
+
+  .input-cell input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    text-align: center;
+    transition: color 0.2s;
+  }
+
+  .input-cell input::placeholder { color: var(--text-dim); font-size: 0.8rem; }
+
+  .input-cell input:focus {
+    color: var(--accent);
+    background: rgba(0,200,255,0.05);
+  }
+
+  .input-cell input:not(:placeholder-shown) { color: #fff; }
+
+  .label-cell {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    text-align: center;
+    padding-top: 2px;
+    display: block;
+  }
+
+  /* MODULE MOY DISPLAY */
+  .mod-avg {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 10px 6px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+    transition: color 0.3s;
+  }
+
+  .mod-avg.active { color: var(--accent3); font-weight: bold; }
+
+  /* CALCULATE BUTTON */
+  .btn-calc {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    font-family: var(--display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: transparent;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.3s;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    margin-bottom: 32px;
+  }
+
+  .btn-calc::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+    z-index: -1;
+  }
+
+  .btn-calc:hover { color: var(--bg); }
+  .btn-calc:hover::before { transform: translateX(0); }
+
+  .btn-calc:active { transform: scale(0.99); }
+
+  /* RESULT */
+  .result-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 32px;
+    text-align: center;
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.5s;
+  }
+
+  .result-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+  }
+
+  .result-panel.pass { border-color: var(--green); }
+  .result-panel.pass::before { background: radial-gradient(ellipse at center, rgba(0,230,118,0.08), transparent 70%); opacity: 1; }
+  .result-panel.fail { border-color: var(--red); }
+  .result-panel.fail::before { background: radial-gradient(ellipse at center, rgba(255,59,59,0.08), transparent 70%); opacity: 1; }
+
+  .result-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .result-number {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(4rem, 12vw, 7rem);
+    line-height: 1;
+    color: #fff;
+    letter-spacing: -2px;
+    transition: color 0.5s, text-shadow 0.5s;
+  }
+
+  .result-number.pass {
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(0,230,118,0.5);
+  }
+
+  .result-number.fail {
+    color: var(--red);
+    text-shadow: 0 0 40px rgba(255,59,59,0.5);
+  }
+
+  .result-status {
+    font-family: var(--display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  .result-status.visible { opacity: 1; }
+  .result-status.pass { color: var(--green); }
+  .result-status.fail { color: var(--red); }
+
+  .result-sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+
+  /* ERROR */
+  .error-msg {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #ff8c42;
+    text-align: center;
+    margin-top: 12px;
+    letter-spacing: 1px;
+    min-height: 18px;
+  }
+
+  /* CORNER DECORATIONS */
+  .corner-tl, .corner-br {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: var(--accent2);
+    border-style: solid;
+    opacity: 0.4;
+  }
+  .corner-tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+  .corner-br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+  /* DECORATIVE BOTTOM LINE */
+  .deco-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 32px;
+    opacity: 0.3;
+  }
+  .deco-line hr { flex: 1; border: none; border-top: 1px solid var(--accent2); }
+  .deco-line span { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: var(--accent2); }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .module-row { grid-template-columns: 1fr 50px 78px 78px 78px; gap: 4px; }
+    .module-header { display: none; }
+    .module-name { font-size: 0.78rem; }
+    .input-cell input { font-size: 0.82rem; padding: 8px 6px; }
+  }
+
+  @media (max-width: 480px) {
+    .module-row { grid-template-columns: 1fr 40px 70px 70px 70px; }
+  }
+
+  /* Animated number */
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .result-number.animate { animation: countUp 0.4s ease forwards; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-badge">// SYS: GRADE_CALC v2.5 //</div>
+    <h1>GRADE <span>CALCULATOR</span></h1>
+    <p class="subtitle">3ème Année Ingénieur — Automatique</p>
+    <div class="header-line"></div>
+  </header>
+
+  <div class="module-header">
+    <span>Module</span>
+    <span>Coeff</span>
+    <span>◈ Cours</span>
+    <span>◈ TD</span>
+    <span>◈ TP</span>
+    <span>Moy</span>
+  </div>
+
+  <div class="modules-grid" id="modulesGrid">
+    <!-- rows injected by JS -->
+  </div>
+
+  <button class="btn-calc" onclick="calculate()">
+    ⟩ CALCULER LA MOYENNE GÉNÉRALE ⟨
+  </button>
+
+  <div class="result-panel" id="resultPanel">
+    <div class="corner-tl"></div>
+    <div class="corner-br"></div>
+    <div class="result-label">// MOYENNE GÉNÉRALE //</div>
+    <div class="result-number" id="resultNumber">—</div>
+    <div class="result-status" id="resultStatus"></div>
+    <div class="result-sub" id="resultSub">En attente des notes...</div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="deco-line">
+    <hr><span>◈ AUTOMATIQUE ◈ ÉLECTRONIQUE ◈ SYSTÈMES LINÉAIRES ◈</span><hr>
+  </div>
+
+</div>
+
+<script>
+const modules = [
+  { name: "Asservissement des Systèmes Linéaires Continus", coeff: 4, cours: true,  td: true,  tp: true  },
+  { name: "Logique Combinatoire et Séquentielle",           coeff: 4, cours: true,  td: true,  tp: true  },
+  { name: "Actionneurs",                                    coeff: 2, cours: true,  td: false, tp: true  },
+  { name: "Électronique de Puissance",                      coeff: 2, cours: true,  td: true,  tp: true  },
+  { name: "Méthodes Numériques",                            coeff: 2, cours: true,  td: false, tp: true  },
+  { name: "Électronique Appliquée",                         coeff: 2, cours: true,  td: false, tp: true  },
+  { name: "Capteurs",                                       coeff: 1, cours: true,  td: false, tp: true  },
+  { name: "Programmation en C++",                          coeff: 1, cours: false, td: false, tp: true  },
+  { name: "Anglais Technique en Automatique",              coeff: 1, cours: true,  td: false, tp: false },
+];
+
+function buildGrid() {
+  const grid = document.getElementById('modulesGrid');
+  grid.innerHTML = '';
+
+  modules.forEach((mod, i) => {
+    const row = document.createElement('div');
+    row.className = 'module-row';
+
+    // Name
+    const nameCell = document.createElement('div');
+    nameCell.className = 'card';
+    nameCell.innerHTML = `<span class="module-name">${mod.name}</span>`;
+
+    // Coeff
+    const coeffCell = document.createElement('div');
+    coeffCell.className = 'coeff-badge';
+    coeffCell.textContent = mod.coeff;
+
+    // Helper to build input
+    const makeInput = (type, active, label) => {
+      const cell = document.createElement('div');
+      cell.className = 'input-cell' + (active ? '' : ' disabled');
+      cell.innerHTML = `
+        <input type="number" id="${type}_${i}" min="0" max="20" step="0.25"
+          placeholder="${active ? '/ 20' : '—'}"
+          ${active ? '' : 'disabled'}
+          oninput="updateModAvg(${i})"
+        >
+        <span class="label-cell">${label}</span>
+      `;
+      return cell;
+    };
+
+    const coursCell = makeInput('cours', mod.cours, 'Cours');
+    const tdCell    = makeInput('td',    mod.td,    'TD');
+    const tpCell    = makeInput('tp',    mod.tp,    'TP');
+
+    // Moy
+    const avgCell = document.createElement('div');
+    avgCell.className = 'mod-avg';
+    avgCell.id = `avg_${i}`;
+    avgCell.textContent = '—';
+
+    row.appendChild(nameCell);
+    row.appendChild(coeffCell);
+    row.appendChild(coursCell);
+    row.appendChild(tdCell);
+    row.appendChild(tpCell);
+    row.appendChild(avgCell);
+
+    grid.appendChild(row);
+  });
+}
+
+function getVal(id) {
+  const el = document.getElementById(id);
+  if (!el || el.disabled) return null;
+  const v = parseFloat(el.value);
+  return isNaN(v) ? null : v;
+}
+
+function computeModAvg(i) {
+  const mod = modules[i];
+  const c = getVal(`cours_${i}`);
+  const td = getVal(`td_${i}`);
+  const tp = getVal(`tp_${i}`);
+
+  const has = (flag, val) => flag && val !== null;
+
+  // Case: cours only (no TD, no TP)
+  if (mod.cours && !mod.td && !mod.tp) {
+    return has(mod.cours, c) ? c : null;
+  }
+  // Case: TP only (no cours, no TD) — e.g. C++
+  if (!mod.cours && !mod.td && mod.tp) {
+    return has(mod.tp, tp) ? tp : null;
+  }
+  // Case: cours + TD only
+  if (mod.cours && mod.td && !mod.tp) {
+    if (c !== null && td !== null) return 0.6 * c + 0.4 * td;
+    return null;
+  }
+  // Case: cours + TP only
+  if (mod.cours && !mod.td && mod.tp) {
+    if (c !== null && tp !== null) return 0.6 * c + 0.4 * tp;
+    return null;
+  }
+  // Case: cours + TD + TP
+  if (mod.cours && mod.td && mod.tp) {
+    if (c !== null && td !== null && tp !== null) return 0.6 * c + 0.2 * td + 0.2 * tp;
+    return null;
+  }
+  return null;
+}
+
+function updateModAvg(i) {
+  const avg = computeModAvg(i);
+  const cell = document.getElementById(`avg_${i}`);
+  if (avg !== null) {
+    cell.textContent = avg.toFixed(2);
+    cell.classList.add('active');
+  } else {
+    cell.textContent = '—';
+    cell.classList.remove('active');
+  }
+}
+
+function calculate() {
+  const errEl = document.getElementById('errorMsg');
+  errEl.textContent = '';
+
+  let sumWeighted = 0;
+  let sumCoeff = 0;
+  let missing = [];
+
+  modules.forEach((mod, i) => {
+    const avg = computeModAvg(i);
+    if (avg === null) {
+      missing.push(mod.name.split(' ').slice(0, 3).join(' ') + '…');
+    } else {
+      sumWeighted += avg * mod.coeff;
+      sumCoeff += mod.coeff;
+      document.getElementById(`avg_${i}`).textContent = avg.toFixed(2);
+    }
+  });
+
+  if (missing.length > 0) {
+    errEl.textContent = `⚠ Notes manquantes : ${missing.slice(0,3).join(', ')}${missing.length > 3 ? '...' : ''}`;
+    return;
+  }
+
+  const generale = sumWeighted / sumCoeff;
+
+  const numEl    = document.getElementById('resultNumber');
+  const statusEl = document.getElementById('resultStatus');
+  const subEl    = document.getElementById('resultSub');
+  const panel    = document.getElementById('resultPanel');
+
+  numEl.classList.remove('pass', 'fail', 'animate');
+  statusEl.classList.remove('pass', 'fail', 'visible');
+  panel.classList.remove('pass', 'fail');
+
+  void numEl.offsetWidth; // reflow for animation
+
+  numEl.textContent = generale.toFixed(2) + ' / 20';
+  numEl.classList.add('animate');
+
+  if (generale >= 10) {
+    numEl.classList.add('pass');
+    statusEl.textContent = '✔ ADMIS(E)';
+    statusEl.classList.add('pass', 'visible');
+    panel.classList.add('pass');
+    subEl.textContent = `Coeff total : ${sumCoeff} | Félicitations !`;
+  } else {
+    numEl.classList.add('fail');
+    statusEl.textContent = '✘ NON ADMIS(E)';
+    statusEl.classList.add('fail', 'visible');
+    panel.classList.add('fail');
+    subEl.textContent = `Coeff total : ${sumCoeff} | Courage !`;
+  }
+}
+
+buildGrid();
+</script>
+</body>
+</html>
